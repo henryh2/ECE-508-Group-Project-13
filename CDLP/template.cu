@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <cmath>
+#include <thrust/sort.h>
 
 #include "template.hu"
 
@@ -78,7 +79,11 @@ __global__ static void CDLP_gpu( const datatype * labels, //!< per-edge triangle
         }
         //TODO using selection sort right now cause it's a small list, could optimize
         //O NlogN
-        selection_sort(neighbor_space+rowPtr[x],0,neighbor_count);
+        if(neighbor_count>1000){
+            thrust::sort(thrust::device,neighbor_space+rowPtr[x],neighbor_space+rowPtr[x]+neighbor_count);
+        }else{
+            selection_sort(neighbor_space+rowPtr[x],0,neighbor_count);
+        }
         //O N
         datatype most_frequent = find_most_frequent_item(neighbor_space+rowPtr[x],neighbor_count);
         labels_after[x]=most_frequent;
@@ -89,6 +94,8 @@ std::vector<uint32_t> CDLP(const pangolin::COOView<uint32_t> view,int iterations
   //@@ create a pangolin::Vector (uint32_t) to hold per-edge triangle counts
   // Pangolin is backed by CUDA so you do not need to explicitly copy data between host and device.
   // You may find pangolin::Vector::data() function useful to get a pointer for your kernel to use.
+  cudaError_t err = cudaDeviceSetLimit(cudaLimitMallocHeapSize, 1048576ULL*1024);
+
   uint32_t total = view.num_rows();
   std::vector<uint32_t> labels(total);
 
