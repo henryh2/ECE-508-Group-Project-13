@@ -1,0 +1,7 @@
+#pragma once
+
+#include <cstdint>
+#include <pangolin/pangolin.hpp>
+
+// do not modify this function signature
+std::vector<uint32_t> CDLP(const pangolin::COOView<uint32_t> view,int iterations);
