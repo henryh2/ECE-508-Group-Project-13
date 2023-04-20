@@ -9,7 +9,9 @@ HunterGate(
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(tc LANGUAGES CXX CUDA)
+
+
+project(cdlp_project LANGUAGES CXX CUDA)
 
 hunter_add_package(fmt)
 hunter_add_package(spdlog)
@@ -24,23 +26,41 @@ set(CMAKE_COLOR_MAKEFILE ON)
 set(VERBOSE_BUILD ON)
 set(DEFAULT_BUILD_TYPE "Release")
 
+
+
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 include(CTest)
 
-add_executable(project_ex
-  src/main.cpp
-  src/template.cu
-  include/template.hu
-  external/catch.hpp
+add_executable(cdlp_project
+  src/eval.cu
+  src/cdlp.cu
+
+  include/helper.hpp
+  include/cdlp.hu
+
+  common/catch.hpp
+  common/clara.hpp
+  common/utils.hpp
 )
 
-target_compile_features(project_ex PUBLIC cxx_std_11)
 
-target_link_libraries(project_ex pangolin::pangolin32)
+if(DEFINED GRAPH_PREFIX_PATH)
+  message(STATUS "compiling with GRAPH_PREFIX_PATH=${GRAPH_PREFIX_PATH}")
+  target_compile_definitions(cdlp_project PRIVATE GRAPH_PREFIX_PATH=${GRAPH_PREFIX_PATH})
+else()
+  message(FATAL_ERROR "please define GRAPH_PREFIX_PATH")
+endif()
 
-include_directories(project_ex
-  ${PROJECT_SOURCE_DIR}/src
+target_compile_features(cdlp_project PUBLIC cxx_std_11)
+
+target_link_libraries(cdlp_project pangolin::pangolin32)
+
+
+include_directories(cdlp_project
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/common
 )
 
 enable_testing()

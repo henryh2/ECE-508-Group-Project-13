@@ -1,7 +1,0 @@
-#pragma once
-
-#include <cstdint>
-#include <pangolin/pangolin.hpp>
-
-// Method to compute LCC per vertex and provide it in the coefficents array
-void local_clustering_coefficent(const pangolin::COOView<uint32_t> view, uint64_t* coefficents, uint32_t mode);
