@@ -15,6 +15,6 @@ LLC = 2*T/(D * (D - 1))
 
     b. Find the label with the large frequency amongst the node's neighbors (tiebreak on lower label value).
 
-    c. Set this node's label to the most frequent label
+    c. Set this node's label to the most frequent label.
 
 3. Repeat step 2 for max iterations (can oscillate on bipartite graphs);
