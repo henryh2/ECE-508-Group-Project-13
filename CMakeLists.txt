@@ -36,9 +36,11 @@ include(CTest)
 add_executable(cdlp_project
   src/eval.cu
   src/cdlp.cu
+  src/lcc.cu
 
   include/helper.hpp
   include/cdlp.hu
+  include/lcc.hu
 
   common/catch.hpp
   common/clara.hpp

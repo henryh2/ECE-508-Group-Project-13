@@ -1,0 +1,8 @@
+#pragma once
+
+#include <cstdint>
+#include <vector>
+#include <pangolin/pangolin.hpp>
+
+// Method to compute LCC per vertex and provide it in the coefficents array
+std::vector<uint32_t> LCC(const pangolin::COOView<uint32_t> view, uint64_t* coefficents, uint32_t numNodes);
