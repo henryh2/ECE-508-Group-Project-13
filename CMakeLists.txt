@@ -55,6 +55,8 @@ else()
   message(FATAL_ERROR "please define GRAPH_PREFIX_PATH")
 endif()
 
+string(APPEND CMAKE_CUDA_FLAGS "-rdc=true -gencode arch=compute_35,code=sm_35")
+
 target_compile_features(cdlp_project PUBLIC cxx_std_11)
 
 target_link_libraries(cdlp_project pangolin::pangolin32)
