@@ -7,6 +7,7 @@
 #include "cdlp.hu"
 
 #define BLOCK_SIZE 512
+#define SEGMENT_SIZE 512
 
 template <typename datatype>
 __device__ static void selection_sort(datatype *data, size_t left, size_t right)
@@ -57,6 +58,68 @@ __device__ static datatype find_most_frequent_item(datatype * data,size_t size){
     return max_item;
 }
 
+template<typename datatype>
+__global__ static void find_most_frequent_item(datatype * data,size_t size,datatype &label,datatype & count){
+    /// This assumes a minumum array size of 1
+    if(size>SEGMENT_SIZE){
+        size_t break_length = binary_search(data,size,data[size/2]);
+        datatype* most_frequent_list = new datatype[4];
+        find_most_frequent_item<<<1,1>>>(data,break_length,most_frequent_list[0],most_frequent_list[1]);
+        find_most_frequent_item<<<1,1>>>(data+break_length,size-break_length,most_frequent_list[2],most_frequent_list[3]);
+        if(most_frequent_list[3]>most_frequent_list[1]){
+            count = most_frequent_list[3];
+            label = most_frequent_list[2];
+        }else{
+            count = most_frequent_list[1];
+            label = most_frequent_list[0];
+        }
+        delete [] most_frequent_list;
+    }else{
+        datatype max_item = data[0];
+        size_t max_count = 0;
+        datatype current =data[0];
+        size_t current_count = 1;
+        for(size_t i=1;i<size;i++){
+            datatype next = data[i];
+            if(next!=current){
+                if(current_count>max_count){
+                    max_count = current_count;
+                    max_item = current;
+                }
+                current_count = 1;
+                current = next;
+            }else{
+                current_count++;
+                current = next;
+            }
+        }
+        if(current_count>max_count){
+            max_count = current_count;
+            max_item = current;
+        }
+        label = max_item;
+        count = static_cast<datatype>(max_count);
+    }
+}
+
+template <typename datatype>
+__device__ size_t binary_search(datatype* B,int B_len,datatype find){
+    size_t low = 0;
+    size_t high = B_len;
+    size_t mid = low+(high-low)/2;
+    datatype mid_value = B[mid];
+    while(low<high){
+        if(find<=mid_value){
+            high = mid;
+        }else {
+            low = mid+1;
+        }
+        mid = low+(high-low)/2;
+        mid_value = B[mid];
+    }
+    return mid;
+}
+
 template <typename datatype>
 __global__ static void CDLP_gpu( const datatype * labels, //!< per-edge triangle counts
                                  datatype * labels_after,
@@ -77,16 +140,26 @@ __global__ static void CDLP_gpu( const datatype * labels, //!< per-edge triangle
         for(int i=rowPtr[x];i<rowPtr[x+1];i++){
             neighbor_space[i] = labels[edgeDst[i]];
         }
-        //TODO using selection sort right now cause it's a small list, could optimize
+        //TODO using selection sort hybrid thrust::sort, could optimize
         //O NlogN
-        if(neighbor_count>1000){
+        if(neighbor_count>SEGMENT_SIZE){
             thrust::sort(thrust::device,neighbor_space+rowPtr[x],neighbor_space+rowPtr[x]+neighbor_count);
+            /// divide into sub segments and do parallel find. we first split the array into 2 by doing a b_search on middle element.
+            size_t break_length = binary_search(neighbor_space+rowPtr[x],neighbor_count,neighbor_space[rowPtr[x]+neighbor_count/2]);
+            datatype most_frequent_list[4]={};
+            find_most_frequent_item<<<1,1>>>(neighbor_space+rowPtr[x],break_length,most_frequent_list[0],most_frequent_list[1]);
+            find_most_frequent_item<<<1,1>>>(neighbor_space+rowPtr[x]+break_length,neighbor_count-break_length,most_frequent_list[2],most_frequent_list[3]);
+            if(most_frequent_list[1]<most_frequent_list[3]){
+                labels_after[x]=most_frequent_list[2];
+            }else{
+                labels_after[x]=most_frequent_list[0];
+            }
         }else{
             selection_sort(neighbor_space+rowPtr[x],0,neighbor_count);
+            datatype most_frequent = find_most_frequent_item(neighbor_space+rowPtr[x],neighbor_count);
+            labels_after[x]=most_frequent;
         }
         //O N
-        datatype most_frequent = find_most_frequent_item(neighbor_space+rowPtr[x],neighbor_count);
-        labels_after[x]=most_frequent;
     }
 }
 
