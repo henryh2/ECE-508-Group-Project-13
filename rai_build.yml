@@ -14,4 +14,4 @@ commands:
     - cp -r /src . # ensure source code is in upload folder
     - /opt/cmake/bin/cmake /src -DCMAKE_PREFIX_PATH=${PANGOLIN_INSTALL_DIR} -DGRAPH_PREFIX_PATH=\"./src/data\"
     - make
-    - ./cdlp_project -c CDLP
+    - ./cdlp_project -c LCC
