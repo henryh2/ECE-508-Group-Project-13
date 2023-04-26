@@ -212,13 +212,13 @@ std::vector<float> LCC(const pangolin::COOView<uint32_t> view, uint32_t numNodes
   // Kernel coefficients array
   float *kernel_coefficents;
   cudaMalloc((void**) (&kernel_coefficents), numNodes * sizeof(float));
-  triangle_count_kernel<<<dimGridCount, dimBlock>>>(triangleCounts, view.row_ind(), view.col_ind(), view.row_ptr(), view.nnz());
+  triangle_count_kernel<<<dimGridCount, dimBlock>>>(triangleCounts, nodeCounts, view.row_ind(), view.col_ind(), view.row_ptr(), view.nnz());
   // triangle_count_kernel<<<1, 128>>>(triangleCounts, nodeCounts, view.row_ind(), view.col_ind(), view.row_ptr(), view.nnz());
 
   // One thread calculate the coefficient for one node
   dim3 dimGridCoefficient(ceil(numNodes * 1.0 / BLOCK_SIZE));
   // launch another kernal to compute llc
-  coefficients_calculate_kernel<<<dimGridCoefficient, dimBlock>>>(triangleCounts, view.row_ptr(), kernel_coefficents, numNodes);
+  coefficients_calculate_kernel<<<dimGridCoefficient, dimBlock>>>(triangleCounts, nodeCounts, view.row_ptr(), kernel_coefficents, numNodes);
   // coefficients_calculate_kernel<<<1, 128>>>(triangleCounts, nodeCounts, view.row_ptr(), kernel_coefficents, numNodes);
 
   cudaMemcpy(coefficients, kernel_coefficents, sizeof(float) * numNodes, cudaMemcpyDeviceToHost); 
