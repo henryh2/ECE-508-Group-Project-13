@@ -16,7 +16,7 @@ typedef uint32_t u32;
  * uPtr is linear pointer
  * vPtr is binary pointer
 */
-__device__ static int binary_search_kernel(u32 start, u32 end, u32 ts, u32 tend, u32 src, u32 dst, const uint32_t *const edgeDst, uint32_t *__restrict__ triangleCounts) {
+__global__ static int binary_search_kernel(u32 start, u32 end, u32 ts, u32 tend, u32 src, u32 dst, const uint32_t *const edgeDst, uint32_t *__restrict__ triangleCounts) {
   int tx = blockIdx.x * blockDim.x + threadIdx.x;
   if (tx + start >= end) {
     return;
