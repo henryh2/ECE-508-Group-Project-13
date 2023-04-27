@@ -6,3 +6,4 @@
 
 // Method to compute LCC per vertex and provide it in the coefficents array
 std::vector<float> LCC(const pangolin::COOView<uint32_t> view, uint32_t numNodes);
+pangolin::Vector<double> count_triangles(const pangolin::COOView<uint32_t> view, const int directed);
