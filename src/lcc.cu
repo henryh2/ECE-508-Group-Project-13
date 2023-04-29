@@ -16,7 +16,7 @@ typedef uint32_t u32;
  * uPtr is linear pointer
  * vPtr is binary pointer
 */
-__global__ static int binary_search_kernel(u32 start, u32 end, u32 ts, u32 tend, u32 src, u32 dst, const uint32_t *const edgeDst, uint32_t *__restrict__ triangleCounts) {
+__global__ static void binary_search_kernel(u32 start, u32 end, u32 ts, u32 tend, u32 src, u32 dst, const uint32_t *const edgeDst, uint32_t *__restrict__ triangleCounts) {
   int tx = blockIdx.x * blockDim.x + threadIdx.x;
   if (tx + start >= end) {
     return;
@@ -34,7 +34,6 @@ __global__ static int binary_search_kernel(u32 start, u32 end, u32 ts, u32 tend,
       ts = mid + 1;
     }
   }
-  return 0;
 }
 
 __device__ static uint32_t binary_search_and_add(const uint32_t *const edgeDst, uint32_t *triangleCount, uint32_t uPtr, uint32_t uEnd, uint32_t vPtr, uint32_t vEnd) {
@@ -127,27 +126,54 @@ __global__ static void triangle_count_kernel(uint32_t *__restrict__ triangleCoun
   if(tx < numEdges) {
     int nodeNum = edgeSrc[tx];
     int dstNode = edgeDst[tx];
-    uint32_t uptr = rowPtr[nodeNum];
-    uint32_t uend = rowPtr[nodeNum + 1];
-    uint32_t vptr = rowPtr[edgeDst[tx]];
-    uint32_t vend = rowPtr[edgeDst[tx] + 1];
+    uint32_t uPtr = rowPtr[nodeNum];
+    uint32_t uEnd = rowPtr[nodeNum + 1];
+    uint32_t vPtr = rowPtr[edgeDst[tx]];
+    uint32_t vEnd = rowPtr[edgeDst[tx] + 1];
+    uint32_t x = 0;
 
     uint32_t start, end, ts, tend;
 
-    if (uend - uptr < vend - vptr) {
-      start = uptr; end = uend; ts = vptr; tend = vend;
+    if (uEnd - uPtr < vEnd - vPtr) {
+      start = uPtr; end = uEnd; ts = vPtr; tend = vEnd;
     } else {
-      start = vptr; end = vend; ts = uptr; tend = uend;
+      start = vPtr; end = vEnd; ts = uPtr; tend = uEnd;
     }
+
+    // uint32_t uDiff = uEnd - uPtr;
+    // uint32_t vDiff = vEnd - vPtr;
+    // uint32_t x = 0;
+    // // From triangle counting lab
+    // // using binary search when V was as least 64 and V/U was at least 6 (V is the longer list length, and U the shorter one).
+    // if (uDiff > vDiff && uDiff >= 64 && uDiff / vDiff >= 6) {
+    //   // One node may have many edges, use atomic add
+    //   x = binary_search_and_add(edgeDst, triangleCounts, vPtr, vEnd, uPtr, uEnd);
+    //   // atomicAdd(&triangleCounts[nodeNum], x);
+    // }
+    // else if(vDiff > uDiff && vDiff >= 64 && vDiff / uDiff >= 6) {
+    //   x = binary_search_and_add(edgeDst, triangleCounts, vPtr, vEnd, uPtr, uEnd);
+    //   // atomicAdd(&triangleCounts[nodeNum], x);
+    // }
+    // else{
+    //   x = linear_search_and_add(edgeDst, triangleCounts, vPtr, vEnd, uPtr, uEnd);
+    //   // atomicAdd(&triangleCounts[nodeNum], x);
+    // }
+
+    // atomicAdd(&triangleCounts[nodeNum], x);
+    // atomicAdd(&triangleCounts[dstNode], x);
+    // atomicAdd(&nodeCounts[nodeNum], 1);
+    // atomicAdd(&nodeCounts[dstNode], 1);
 
     // From triangle counting lab
     // using binary search when V was as least 64 and V/U was at least 6 (V is the longer list length, and U the shorter one).
+
+
     // if (tend - ts >= 64 && (tend - ts) / (end - start) >= 6) {
      dim3 dimBlock(BLOCK_SIZE);
      dim3 dimGridCount(ceil((tend - ts) * 1.0 / BLOCK_SIZE));
      binary_search_kernel<<<dimGridCount, dimBlock>>>(start, end, ts, tend, nodeNum, dstNode, edgeDst, triangleCounts); 
     // } else {
-    //   x = linear_intersect(uptr, uend, vptr, vend, w1, w2, edgeDst);
+    //   x = linear_intersect(uPtr, uEnd, vPtr, vEnd, w1, w2, edgeDst);
     //   atomicAdd(&triangleCounts[nodeNum], x);
     //   atomicAdd(&triangleCounts[dstNode], x);
     // }

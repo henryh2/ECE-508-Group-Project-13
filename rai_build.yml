@@ -1,7 +1,7 @@
 # lab: Triangle Counting
 rai:
   version: 0.2
-  image: raiproject/pumps2018:triangle-counting-amd64-cuda100
+  image: raiproject/pumps2018:triangle-counting-amd64-cuda100-cmake3.9test2
 resources:
   cpu:
     architecture: amd64
