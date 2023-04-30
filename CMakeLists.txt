@@ -9,7 +9,8 @@ HunterGate(
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-
+find_package(CUDAToolkit REQUIRED)
+# find_package(CUDA REQUIRED)
 
 project(cdlp_project LANGUAGES CXX CUDA)
 
@@ -20,12 +21,10 @@ hunter_add_package(cub)
 find_package(cub CONFIG REQUIRED)
 hunter_add_package(Catch)
 find_package(pangolin CONFIG REQUIRED)
-find_package(CUDA REQUIRED)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(VERBOSE_BUILD ON)
-set(CMAKE_CXX_STANDARD 11)
 set(DEFAULT_BUILD_TYPE "Release")
 
 
@@ -47,10 +46,6 @@ add_executable(cdlp_project
   common/utils.hpp
 )
 
-# CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_ARCH_FLAGS Auto)
-# list(APPEND CUDA_NVCC_FLAGS ${CUDA_ARCH_FLAGS})
-list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_70,code=sm_70;)
-
 
 if(DEFINED GRAPH_PREFIX_PATH)
   message(STATUS "compiling with GRAPH_PREFIX_PATH=${GRAPH_PREFIX_PATH}")
@@ -59,17 +54,19 @@ else()
   message(FATAL_ERROR "please define GRAPH_PREFIX_PATH")
 endif()
 
-# string(APPEND CMAKE_CUDA_FLAGS "-rdc=true -gencode arch=compute_35,code=sm_35")
-target_compile_features(cdlp_project PUBLIC cxx_std_11)
-target_compile_options(cdlp_project PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
+# CUDA_SELECT_NVCC_ARCH_FLAGS(CUDA_ARCH_FLAGS Auto)
+# list(APPEND CUDA_NVCC_FLAGS ${CUDA_ARCH_FLAGS})
+list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_70,code=sm_70;)
 
+target_compile_features(cdlp_project PUBLIC cxx_std_11)
+
+target_compile_options(cdlp_project PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
 set_target_properties( cdlp_project PROPERTIES
                        CUDA_SEPARABLE_COMPILATION ON
                       #  CUDA_RESOLVE_DEVICE_SYMBOLS ON
                       )
 
-target_link_libraries(cdlp_project ${CUDA_LIBRARIES} ${CUDA_cudadevrt_LIBRARY})
-target_link_libraries(cdlp_project pangolin::pangolin32)
+target_link_libraries(cdlp_project pangolin::pangolin32 ${CUDA_LIBRARIES} ${CUDA_cudadevrt_LIBRARY})
 
 
 include_directories(cdlp_project
