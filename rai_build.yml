@@ -12,6 +12,6 @@ resources:
 commands:
   build:
     - cp -r /src . # ensure source code is in upload folder
-    - /root/spack/opt/spack/linux-ubuntu18.04-skylake/gcc-7.3.0/cmake-3.26.3-yuk5ln5gyf345uqiqb44jzuzaczldhz2/bin/cmake /src -DCMAKE_PREFIX_PATH=${PANGOLIN_INSTALL_DIR} -DGRAPH_PREFIX_PATH=\"./src/data\"
+    - /root/spack/opt/spack/linux-ubuntu18.04-skylake/gcc-7.3.0/cmake-3.26.3-yuk5ln5gyf345uqiqb44jzuzaczldhz2/bin/cmake /src -DCMAKE_PREFIX_PATH=${PANGOLIN_INSTALL_DIR} -DGRAPH_PREFIX_PATH=\"/graphs\"
     - make
     - ./cdlp_project -c LCC
