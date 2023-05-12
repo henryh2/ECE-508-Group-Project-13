@@ -156,9 +156,9 @@ static int eval(int iterations, const std::string& edge_path, const std::string&
       timer_stop();
 
       // printf("num rows: %d\n", coo.num_rows());
-      timer_start("Actual LCC baseline kernel");
-      actual_lcc_baseline = LCC(coo.view(), coo.num_rows());
-      timer_stop();
+      // timer_start("Actual LCC baseline kernel");
+      // actual_lcc_baseline = LCC(coo.view(), coo.num_rows());
+      // timer_stop();
 
       // timer_start("building unified memory CSR");
       // // build a csr/coo matrix from the edge list
@@ -168,9 +168,9 @@ static int eval(int iterations, const std::string& edge_path, const std::string&
       // );
       // timer_stop(); // building unified memory CSR
 
-      // timer_start("Actual LCC dynamic parallelism kernel");
-      // actual_lcc_dynamic_parallel = LCC_dynamic(coo.view(), coo.num_rows());
-      // timer_stop();
+      timer_start("Actual LCC dynamic parallelism kernel");
+      actual_lcc_dynamic_parallel = LCC_dynamic(coo.view(), coo.num_rows());
+      timer_stop();
 
       // printf("\nActual LCC: \n");
       // for(int i = 0; i < actual_lcc.size(); i++) {
@@ -178,21 +178,21 @@ static int eval(int iterations, const std::string& edge_path, const std::string&
       // }
       printf("-------------------------------------------------------------\n");
       // // Validate baseline solution
-      timer_start("Validating baseline LCC");
-      REQUIRE(expected_lcc.size() == actual_lcc_baseline.size());
-      for(uint32_t i = 0; i < expected_lcc.size(); ++i)
-        REQUIRE((float)expected_lcc[i] == actual_lcc_baseline[i]);
-      timer_stop();
-      printf("\n");
+      // timer_start("Validating baseline LCC");
+      // REQUIRE(expected_lcc.size() == actual_lcc_baseline.size());
+      // for(uint32_t i = 0; i < expected_lcc.size(); ++i)
+      //   REQUIRE((float)expected_lcc[i] == actual_lcc_baseline[i]);
+      // timer_stop();
+      // printf("\n");
 
       // Validate dynamic parallel solution
-      // timer_start("Validating dynamic parallel LCC");
-      // REQUIRE(expected_lcc.size() == actual_lcc_dynamic_parallel.size());
-      // for(uint32_t i = 0; i < expected_lcc.size(); ++i) {
-      //   INFO("iteration " << i);
-      //   REQUIRE((float)expected_lcc[i] == actual_lcc_dynamic_parallel[i]);
-      // }
-      // timer_stop();
+      timer_start("Validating dynamic parallel LCC");
+      REQUIRE(expected_lcc.size() == actual_lcc_dynamic_parallel.size());
+      for(uint32_t i = 0; i < expected_lcc.size(); ++i) {
+        INFO("iteration " << i);
+        REQUIRE((float)expected_lcc[i] == actual_lcc_dynamic_parallel[i]);
+      }
+      timer_stop();
   }
   
   // timer_stop();
