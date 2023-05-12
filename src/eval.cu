@@ -160,16 +160,24 @@ static int eval(int iterations, const std::string& edge_path, const std::string&
       actual_lcc_baseline = LCC(coo.view(), coo.num_rows());
       timer_stop();
 
-      timer_start("Actual LCC dynamic parallelism kernel");
+      // timer_start("building unified memory CSR");
+      // // build a csr/coo matrix from the edge list
+      // coo = pangolin::COO<uint32_t>::from_edgelist(
+      //   edgeList,
+      //   [](const pangolin::Edge &e) {return e.first <= e.second; } // keep src > dst
+      // );
+      // timer_stop(); // building unified memory CSR
+
+      // timer_start("Actual LCC dynamic parallelism kernel");
       // actual_lcc_dynamic_parallel = LCC_dynamic(coo.view(), coo.num_rows());
-      timer_stop;
+      // timer_stop();
 
       // printf("\nActual LCC: \n");
       // for(int i = 0; i < actual_lcc.size(); i++) {
       //   printf("%d: %f\n", i, actual_lcc[i]);
       // }
       printf("-------------------------------------------------------------\n");
-      // Validate baseline solution
+      // // Validate baseline solution
       timer_start("Validating baseline LCC");
       REQUIRE(expected_lcc.size() == actual_lcc_baseline.size());
       for(uint32_t i = 0; i < expected_lcc.size(); ++i)
@@ -180,8 +188,10 @@ static int eval(int iterations, const std::string& edge_path, const std::string&
       // Validate dynamic parallel solution
       // timer_start("Validating dynamic parallel LCC");
       // REQUIRE(expected_lcc.size() == actual_lcc_dynamic_parallel.size());
-      // for(uint32_t i = 0; i < expected_lcc.size(); ++i)
+      // for(uint32_t i = 0; i < expected_lcc.size(); ++i) {
+      //   INFO("iteration " << i);
       //   REQUIRE((float)expected_lcc[i] == actual_lcc_dynamic_parallel[i]);
+      // }
       // timer_stop();
   }
   
