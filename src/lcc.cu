@@ -228,28 +228,49 @@ __global__ static void triangle_count_extra(uint32_t *__restrict__ triangleCount
         // }
         if (end - start == 1) {
           if (split == 0) {
-            x = linear_search_and_add(edgeDst, triangleCounts, start, end, ts, tend);
+            if (tend - ts >= 64) {
+              x = binary_search_and_add(edgeDst, triangleCounts, start, end, ts, tend);
+            } else {
+              x = linear_search_and_add(edgeDst, triangleCounts, start, end, ts, tend);
+            }
             atomicAdd(&triangleCounts[nodeNum], x);
             atomicAdd(&triangleCounts[dstNode], x);
           }
         } else if (end - start == 2) {
           if (split < 2) {
-            x = binary_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            if (tend - ts >= 64) {
+              x = binary_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            } else {
+              x = linear_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            }
             atomicAdd(&triangleCounts[nodeNum], x);
             atomicAdd(&triangleCounts[dstNode], x);
           }
         } else if (end - start == 3) {
           if (split < 3) {
-            x = binary_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            if (tend - ts >= 64) {
+              x = binary_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            } else {
+              x = linear_search_and_add(edgeDst, triangleCounts, start + split, start + split + 1, ts, tend);
+            }
             atomicAdd(&triangleCounts[nodeNum], x);
             atomicAdd(&triangleCounts[dstNode], x);
           }
         } else {
-          if (split < 3) {
-            x = binary_search_and_add(edgeDst, triangleCounts, start + (split * step), start + ((split + 1) * step), ts, tend);
-          }
-          else {
-            x = binary_search_and_add(edgeDst, triangleCounts, start + (split * step), end, ts, tend);
+          if (tend - ts >= 64) {
+            if (split < 3) {
+              x = binary_search_and_add(edgeDst, triangleCounts, start + (split * step), start + ((split + 1) * step), ts, tend);
+            }
+            else {
+              x = binary_search_and_add(edgeDst, triangleCounts, start + (split * step), end, ts, tend);
+            }
+          } else {            
+            if (split < 3) {
+              x = linear_search_and_add(edgeDst, triangleCounts, start + (split * step), start + ((split + 1) * step), ts, tend);
+            }
+            else {
+              x = linear_search_and_add(edgeDst, triangleCounts, start + (split * step), end, ts, tend);
+            }
           }
           atomicAdd(&triangleCounts[nodeNum], x);
           atomicAdd(&triangleCounts[dstNode], x);
@@ -264,7 +285,7 @@ __global__ static void triangle_count_extra(uint32_t *__restrict__ triangleCount
         // printf("Dst node: %d\n", dstNode);
     }
 
-    __syncthreads();
+    // __syncthreads();
 }
 
 __global__ static void triangle_count_kernel(uint32_t *__restrict__ triangleCounts, //!< per-node triangle counts
