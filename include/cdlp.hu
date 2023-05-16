@@ -5,3 +5,4 @@
 
 // do not modify this function signature
 std::vector<uint32_t> CDLP(const pangolin::COOView<uint32_t> view,int iterations);
+int* cldp(const pangolin::COOView<uint32_t> view, int num_iterations);
